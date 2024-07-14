@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+	<title>Rotate Div</title>
+	<style>
+	body {
+		background-color: silver;
+	}
+	.my-square {
+		height: 100px;
+		width: 100px;
+		position: absolute;
+		background-color: green;
+	}
+	</style>
+</head>
+<body>
+
+<div class="my-square" style="top: 0px; left: 0px;"></div>
+
+<script>
+const d = document.querySelector(".my-square");
+let dLeft = parseFloat(d.style.left);
+let dTop = parseFloat(d.style.top);
+
+////////////////////////////////////
+
+function rotate(cx, cy, x, y, radians) {
+    const o = Math.cos(radians);
+    const i = Math.sin(radians);
+    const rx = (o * (x - cx)) + (i * (y - cy)) + cx;
+    const ry = (o * (y - cy)) - (i * (x - cx)) + cy;
+    return [rx, ry];
+}
+
+////////////////////////////////////
+
+function f(t) {
+	const  [dl, dt] = rotate(50, 50, dLeft, dTop, t*0.001);
+	d.style.left = dl + "px";
+	d.style.top = dt + "px";
+	requestAnimationFrame(f);
+}
+requestAnimationFrame(f);
+</script>
+</body>
+
+</html>

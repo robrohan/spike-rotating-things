@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+	<title>Rotate</title>
+	<style>
+	body {
+		background-color: silver;
+	}
+	canvas {
+		background-color: white;
+	}
+	</style>
+</head>
+<body>
+
+<div>
+	<canvas id="org_canvas" width="300" height="227"></canvas>
+	<canvas id="rotate_canvas" width="300" height="227"></canvas>
+</div>
+
+<script>
+const img = new Image();
+img.crossOrigin = "anonymous";
+img.src = "./Floyd.png";
+
+const org_canvas = document.getElementById("org_canvas");
+const ctx1 = org_canvas.getContext("2d");
+
+const rot_canvas = document.getElementById("rotate_canvas");
+const ctx2 = rot_canvas.getContext("2d");
+
+img.addEventListener("load", () => {
+	org_canvas.height = img.height;
+	org_canvas.width = img.width;
+	
+	rot_canvas.height = img.height;
+	rot_canvas.width = img.width;
+	
+	ctx1.drawImage(img, 0, 0);
+	img.style.display = "none";
+
+});
+
+////////////////////////////////////
+
+function test_rotate(rads)
+{
+	// without these, pixels will "trail"
+	// It's faster so if you don't care better without
+	ctx2.fillStyle = "white";
+	ctx2.fillRect(0,0,rot_canvas.width, rot_canvas.height);
+
+	//setting the center of rotation
+	let cx = (org_canvas.width >> 1) | 0;
+	let cy = (org_canvas.height >> 1) | 0;
+
+	const source_id = ctx1.getImageData(0, 0, org_canvas.width, org_canvas.height);
+	const dest_id = ctx2.getImageData(0, 0, rot_canvas.width, rot_canvas.height);
+
+	const source = source_id.data;
+	const dest = dest_id.data;
+
+	for (let x = 0; x < rot_canvas.width; x++)
+	{
+		for (let y = 0; y < rot_canvas.height; y++)
+	    {
+			// pixel for the destnation image
+		    const doff = (x * rot_canvas.height + y) * 4;
+	    	const [nx, ny] = rotate(cx, cy, x, y, rads);
+    	
+			// if the sample position is past the width
+			// ignore the pixel. If you want tiling remove
+			// these lines.
+	    	if(nx > org_canvas.width || nx < 0) {
+		    	continue;
+	    	}
+	    	if(ny > org_canvas.height || ny < 0) {
+		    	continue;
+	    	}
+    	
+    		// pixel to sample from the source image
+	    	const soff = ((nx|0) * rot_canvas.height + (ny|0)) * 4;
+    	
+    		// put sourced pixel in dest
+	       	dest[doff + 0] = source[soff + 0];
+    		dest[doff + 1] = source[soff + 1];
+	    	dest[doff + 2] = source[soff + 2];
+	    	dest[doff + 3] = source[soff + 3];
+	    }
+	}
+
+	ctx2.putImageData(dest_id, 0, 0);
+}
+
+function rotate(cx, cy, x, y, radians) {
+    const o = Math.cos(radians);
+    const i = Math.sin(radians);
+    const rx = (o * (x - cx)) + (i * (y - cy)) + cx;
+    const ry = (o * (y - cy)) - (i * (x - cx)) + cy;
+    return [rx, ry];
+}
+
+function f(t) {
+	test_rotate(t * 0.001);
+	requestAnimationFrame(f);
+}
+requestAnimationFrame(f);
+</script>
+</body>
+
+</html>
